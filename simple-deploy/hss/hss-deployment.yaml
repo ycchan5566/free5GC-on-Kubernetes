@@ -1,0 +1,94 @@
+# Notice: 
+#   ipam: ip range
+#   db uri: different between files
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hss
+  labels:
+    app: hss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hss
+  template:
+    metadata:
+      labels:
+        app: hss
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"192.168.2.3\"]"
+    spec:
+      hostname: hss
+      subdomain: localdomain
+#      hostAliases:
+#      - ip: "10.233.100.202"
+#        hostnames:
+#        - "amf.localdomain"
+#      - ip: "10.233.100.203"
+#        hostnames:
+#        - "hss.localdomain"
+#      - ip: "10.233.100.204"
+#        hostnames:
+#        - "smf.localdomain"
+#      - ip: "10.233.100.205"
+#        hostnames:
+#        - "pcrf.localdomain"
+#      - ip: "10.233.100.206"
+#        hostnames:
+#        - "upf.localdomain"
+      containers:
+      - name: hss
+#        image: sufuf3/nextepc-build:latest
+        image: steven30801/free5gc-build:v1
+        command: ["/bin/bash"]
+        args: ["-c", "/usr/src/free5gc-stage-1/nextepc-hssd"]
+        ports:
+          - containerPort: 80
+            name: api
+          - containerPort: 5868
+            name: api1
+          - containerPort: 3868
+            name: api2
+        imagePullPolicy: IfNotPresent
+#        env:
+#          - name: DB_URI
+#            value: mongodb://mongo-external.free5gc.svc.cluster.local/nextepc
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/free5gc.conf
+          subPath: free5gc.conf
+        - name: hss-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/hss.conf
+          subPath: hss.conf
+        - name: freediameter-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/freeDiameter/hss.conf
+          subPath: hss.conf
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME"]
+#      securityContext:
+#        sysctls:
+#          - name: net.ipv6.conf.all.disable_ipv6
+#            value: "0"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: free5gc
+#            items:
+#           - key: config.file
+#              path: free5gc.conf
+        - name: hss-volume
+          configMap:
+            name: hss
+#            items:
+#            - key: config.file
+#              path: hss.conf
+        - name: freediameter-volume
+          configMap:
+            name: freediameter-hss
+#            items:
+#            - key: config.file
+#              path: hss.conf

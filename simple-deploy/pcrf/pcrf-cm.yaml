@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pcrf
+data:
+  pcrf.conf: |
+    ### For reference, see `free5gc.conf`
+    db_uri: mongodb://mongodb.default.svc.cluster.local/free5gc
+
+    logger:
+      file: /usr/src/free5gc-stage-1/install/var/log/free5gc/pcrf.log
+      trace: 
+        app: 1
+        diameter: 1
+
+    parameter:
+
+    pcrf:
+      freeDiameter: pcrf.conf
