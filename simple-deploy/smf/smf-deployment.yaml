@@ -49,6 +49,8 @@ spec:
           #  name: api1
           #- containerPort: 3868
           #  name: api2
+        stdin: true
+        tty: true
         #imagePullPolicy: Always
         imagePullPolicy: IfNotPresent
 #        env:

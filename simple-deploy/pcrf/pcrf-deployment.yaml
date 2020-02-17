@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pcrf-nextepc-deployment
+  name: pcrf
   labels:
     app: pcrf
 spec:
@@ -46,6 +46,8 @@ spec:
             name: api1
           - containerPort: 3868
             name: api2
+        stdin: true
+        tty: true
         imagePullPolicy: IfNotPresent
 #        env:
 #          - name: DB_URI
