@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amf-deployment
+#  namespace: free5gc
+  labels:
+    app: amf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amf
+  template:
+    metadata:
+      labels:
+        app: amf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"192.168.2.2\"]"
+#        k8s.v1.cni.cncf.io/networks: sriov-net1
+    spec:
+      hostname: amf
+      subdomain: localdomain
+#      hostAliases:
+#      - ip: "10.233.100.202"
+#        hostnames:
+#        - "amf.localdomain"
+#      - ip: "10.233.100.203"
+#        hostnames:
+#        - "hss.localdomain"
+#      - ip: "10.233.100.204"
+#        hostnames:
+#        - "smf.localdomain"
+#      - ip: "10.233.100.205"
+#        hostnames:
+#        - "pcrf.localdomain"
+#      - ip: "10.233.100.206"
+#        hostnames:
+#        - "upf.localdomain"
+      containers:
+      - name: amf-container
+        image: steven30801/free5gc-build:v1
+        command: ["/bin/bash"]
+        args: ["-c", "/usr/src/free5gc-stage-1/free5gc-amfd"]
+        ports:
+          - containerPort: 5868
+            name: api1
+          - containerPort: 3868
+            name: api2
+        stdin: true
+        tty: true
+        imagePullPolicy: IfNotPresent
+#        env:
+#          - name: DB_URI
+#            value: mongodb://mongo-external.free5gc.svc.cluster.local/nextepc
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/free5gc.conf
+          subPath: free5gc.conf
+        - name: freediameter-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/freeDiameter/amf.conf
+          subPath: amf.conf
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME"]
+#        resources:
+#          requests:
+#            intel.com/sriov_net: '1' 
+#          limits:
+#            intel.com/sriov_net: '1'
+      #hostNetwork: true
+#      securityContext:
+#        sysctls:
+#          - name: net.ipv6.conf.all.disable_ipv6
+#            value: "0"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: free5gc
+#            items:
+#            - key: config.file
+#              path: free5gc.conf
+        - name: freediameter-volume
+          configMap:
+            name: freediameter-amf
+#            items:
+#            - key: config.file
+#              path: amf.conf
+      nodeSelector:
+        kubernetes.io/hostname: node2

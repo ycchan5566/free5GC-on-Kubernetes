@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upf-deployment
+#  namespace: free5gc
+  labels:
+    app: upf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upf
+  template:
+    metadata:
+      labels:
+        app: upf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"192.168.2.6\"]"
+#        k8s.v1.cni.cncf.io/networks: sriov-net1
+    spec:
+      hostname: upf
+      subdomain: localdomain
+#      hostAliases:
+#      - ip: "10.233.100.202"
+#        hostnames:
+#        - "amf.localdomain"
+#      - ip: "10.233.100.203"
+#        hostnames:
+#        - "hss.localdomain"
+#      - ip: "10.233.100.204"
+#        hostnames:
+#        - "smf.localdomain"
+#      - ip: "10.233.100.205"
+#        hostnames:
+#        - "pcrf.localdomain"
+#      - ip: "10.233.100.206"
+#        hostnames:
+#        - "upf.localdomain"
+      containers:
+      - name: upf-container
+        image: steven30801/free5gc-build:v1
+        command: ["/bin/bash"]
+        args: ["-c", "/root/setup.sh && /usr/src/free5gc-stage-1/free5gc-upfd"]
+        stdin: true
+        tty: true
+        imagePullPolicy: IfNotPresent
+#        env:
+#          - name: DB_URI
+#            value: mongodb://mongo-external.free5gc.svc.cluster.local/nextepc
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/free5gc.conf
+          subPath: free5gc.conf
+        - name: uptun-path
+          mountPath: /dev/net/tun
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME"]
+#        resources:
+#          requests:
+#            intel.com/sriov_net: '1' 
+#          limits:
+#            intel.com/sriov_net: '1'
+      #hostNetwork: true
+#      securityContext:
+#        sysctls:
+#          - name: net.ipv6.conf.all.disable_ipv6
+#            value: "0"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: free5gc
+#            items:
+#            - key: config.file
+#              path: free5gc.conf
+        - name: uptun-path
+          hostPath:
+            path: /dev/net/tun
+      nodeSelector:
+        kubernetes.io/hostname: node2

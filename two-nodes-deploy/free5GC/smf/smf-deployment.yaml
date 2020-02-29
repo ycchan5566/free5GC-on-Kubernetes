@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smf-deployment
+  #namespace: free5gc
+  labels:
+    app: smf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: smf
+  template:
+    metadata:
+      labels:
+        app: smf
+      annotations:
+        cni.projectcalico.org/ipAddrs: "[\"192.168.2.4\"]"
+    spec:
+      hostname: smf
+      subdomain: localdomain
+#      hostAliases:
+#      - ip: "10.233.100.202"
+#        hostnames:
+#        - "amf.localdomain"
+#      - ip: "10.233.100.203"
+#        hostnames:
+#        - "hss.localdomain"
+#      - ip: "10.233.100.204"
+#        hostnames:
+#        - "smf.localdomain"
+#      - ip: "10.233.100.205"
+#        hostnames:
+#        - "pcrf.localdomain"
+#      - ip: "10.233.100.206"
+#        hostnames:
+#        - "upf.localdomain"
+      containers:
+      - name: smf
+        image: steven30801/free5gc-build:v1
+
+        command: ["/bin/bash"]
+        #args: ["-c", "sleep 36000"]
+        args: ["-c", "/usr/src/free5gc-stage-1/free5gc-smfd"]
+        #ports:
+          #- containerPort: 8080
+          #  name: api
+          #- containerPort: 5868
+          #  name: api1
+          #- containerPort: 3868
+          #  name: api2
+        stdin: true
+        tty: true
+        #imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
+#        env:
+#          - name: DB_URI
+#            value: mongodb://mongo-external.free5gc.svc.cluster.local/nextepc
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/free5gc.conf
+          subPath: free5gc.conf
+        - name: freediameter-volume
+          mountPath: /usr/src/free5gc-stage-1/install/etc/free5gc/freeDiameter/smf.conf
+          subPath: smf.conf
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN", "SYS_TIME"]
+#      securityContext:
+#        sysctls:
+#          - name: net.ipv6.conf.all.disable_ipv6
+#            value: "0"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: free5gc
+ #           items:
+ #           - key: config.file
+ #             path: free5gc.conf
+        - name: freediameter-volume
+          configMap:
+            name: freediameter-smf
+#            items:
+#            - key: config.file
+#              path: smf.conf
+      nodeSelector:
+        kubernetes.io/hostname: node1

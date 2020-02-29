@@ -1,0 +1,34 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+NODES = {
+  "node1" => [61234, "10.20.30.50", "setup1.sh"],
+  "node2" => [61235, "10.20.30.51", "setup2.sh"],
+}
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  NODES.each do |(name, arg)|
+    ssh_port, ipaddr, setup_script = arg
+
+    config.vm.define name do |node|
+      node.vm.box = "ubuntu/bionic64"
+      node.vm.hostname = name
+
+      node.vm.network "forwarded_port", guest: 22, host: ssh_port
+      node.vm.network "public_network", bridge: "enx503eaabb5904", ip: ipaddr
+
+      node.vm.provider "virtualbox" do |v|
+        v.memory = 4096
+        v.cpus = 4
+        v.name = name
+      end
+
+      node.vm.provision "docker"
+      node.vm.provision "shell", path: setup_script, privileged: false
+    end
+  end
+end

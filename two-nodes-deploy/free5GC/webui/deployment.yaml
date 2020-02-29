@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webui
+  labels:
+    app: webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webui
+  template:
+    metadata:
+      labels:
+        app: webui
+    spec:
+      containers:
+      - name: nextepc-webui
+        image: steven30801/free5gc-webui:v1
+        command:
+          - npm
+          - run
+          - dev
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+          - name: DB_URI
+#            value: mongodb://mongo-external.free5gc.svc.cluster.local/nextepc
+            value: mongodb://mongodb.default.svc.cluster.local/free5gc
+      nodeSelector:
+        kubernetes.io/hostname: node1
