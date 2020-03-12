@@ -51,6 +51,7 @@ spec:
   datastoreType: "kubernetes"
   kubeconfig: "$HOME/.kube/config"
 EOF
+cp /vagrant/rr.sh ~
 
 # Setup NFS server
 sudo apt-get install -qqy nfs-kernel-server

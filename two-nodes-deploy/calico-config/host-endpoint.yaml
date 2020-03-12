@@ -1,0 +1,19 @@
+apiVersion: projectcalico.org/v3
+kind: HostEndpoint
+metadata:
+  name: node1-enp0s8
+spec:
+  interfaceName: enp0s8
+  node: node1
+  expectedIPs:
+  - 10.20.30.50
+---
+apiVersion: projectcalico.org/v3
+kind: HostEndpoint
+metadata:
+  name: node2-enp0s8
+spec:
+  interfaceName: enp0s8
+  node: node2
+  expectedIPs:
+  - 10.20.30.51
