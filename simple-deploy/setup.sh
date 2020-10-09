@@ -9,7 +9,7 @@ cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 sudo apt-get update
-sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-get install -y kubelet=1.19.0-00 kubeadm=1.19.0-00 kubectl=1.19.0-00
 sudo apt-mark hold kubelet kubeadm kubectl
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 
@@ -17,7 +17,7 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 cat > cluster-config.yaml << "EOF"
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
-kubernetesVersion: v1.17.0
+kubernetesVersion: v1.19.0
 apiServer:
   extraArgs:
     feature-gates: "SCTPSupport=true"
